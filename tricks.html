@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Beaver: Teaching the Web new Tricks</title>
+    <meta charset="utf8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Beaver: Rewild Your Web" />
+    <meta name="theme-color" content="rgb(20, 20, 20)" />
+    <link rel="icon" href="./logo.png" />
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="./stats/index.js"></script>
+    <script>
+      ((window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        }),
+        (plausible.init =
+          plausible.init ||
+          function (i) {
+            plausible.o = i || {};
+          }));
+      plausible.init();
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a href="index.html">
+      <h1><img src="logo.png" class="beaver-logo" />Teaching the Web new Tricks</h1>
+    </a>
+
+    <h2>Distributed Web Apps</h2>
+
+    <p>
+      We are pretty happy to share what we've been working on with Beaver to
+      expand the Web: transparent distributed Web apps!
+    </p>
+
+    <p>
+      The Web has some messaging primitives, such as the
+      <a
+        href="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API"
+        >BroadcastChannel</a
+      >
+      and
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/MessagePort"
+        >Message Ports</a
+      >. If we focus on BroacastChannel, we find that it's a simple to use
+      gossip messaging API that will ensure that all the browsing context from a
+      given origin can communicate. The app developer doesn't have to deal with
+      access control, it's all managed by the web runtime.
+    </p>
+
+    <p>
+      In a regular browser, you can use BroadcastChannel between multiple tabs,
+      in the same chrome window or not. Pretty cool, but also quite limited in
+      today's world where most people use their browser on multiple devices.
+      So... can we extend that capability to be distributed on multiple devices?
+      This is exactly what we did! This relies on a few building blocks:
+    </p>
+
+    <ul>
+      <li>
+        We use the <a href="https://www.iroh.computer/">Iroh</a> peer to peer
+        framework to implement two protocols: a pairing protocol and a framed
+        packets messaging protocol. The messaging one is only usable between
+        paired peers.
+      </li>
+      <li>
+        A new "Pairing" Web API let the system app (since in Beaver everything
+        is Web based) manage the discovery if peers and the pairing flow.
+      </li>
+      <li>
+        We don't expose a new Web API for messaging: instead, we added support
+        in Servo's implementation of BroadcastChannel to also register paired
+        peers channels per origin and route messages across devices.
+      </li>
+    </ul>
+
+    <p>
+      That let web apps that use BroadcastChannel work on multiple devices,
+      without any new API to learn for app developers! This expands naturally
+      from multiple tabs, multiple windows to multiple devices... pretty neat,
+      right?
+    </p>
+
+    <p>
+      Since Beaver's UI is also a Web app, we can use that new capability in
+      Beaver itself! That's what we did with a simple use case first: we added a
+      context menu entry that offers to open the current page on a remote paired
+      device.
+    </p>
+
+    <p>Check the video below for a quick demonstration with 2 peers:</p>
+    <div id="servo-iroh-logos">
+      <img src="media/servo-color-negative-no-container.svg" />
+      +
+      <img src="media/iroh-wordmark-purple.svg" />
+    </div>
+
+    <video src="media/broadcast_channel.mp4" controls></video>
+
+    <p class="time">Updated Mar 16 2026</p>
+  </body>
+</html>

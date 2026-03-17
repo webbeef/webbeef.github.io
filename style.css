@@ -15,12 +15,13 @@
 }
 
 html {
-  height: 100%;
+  min-height: 100%;
   background: rgb(20, 20, 20);
   color: gray;
   font-family: monospace;
   padding: 0;
   background: var(--bg-gradient);
+  font-size: 16px;
 }
 
 body {
@@ -48,16 +49,49 @@ h2 {
   text-shadow: 0px 0px 12px rgba(127, 255, 212, 1);
 }
 
-.logo {
+.beaver-logo {
   width: 3em;
+  transition: transform 0.7s;
+}
+
+.beaver-logo:hover {
+  transform: rotate(45deg);
 }
 
 p {
   text-align: justify;
   line-height: 150%;
-  font-size: larger;
 }
 
 a {
   color: white;
+}
+
+.time {
+  font-size: x-small;
+}
+
+video {
+  max-width: 800px;
+}
+
+a {
+  text-decoration: none;
+}
+
+li {
+  margin-bottom: 0.5em;
+}
+
+#servo-iroh-logos {
+  display: flex;
+  gap: 1em;
+  font-size: x-large;
+  justify-content: center;
+  align-items: center;
+  margin: 1em;
+}
+
+#servo-iroh-logos img {
+  height: 2rem;
 }
