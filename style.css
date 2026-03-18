@@ -17,7 +17,7 @@
 html {
   min-height: 100%;
   background: rgb(20, 20, 20);
-  color: gray;
+  color: lightgray;
   font-family: monospace;
   padding: 0;
   background: var(--bg-gradient);
@@ -64,7 +64,10 @@ p {
 }
 
 a {
-  color: white;
+  color: black;
+  background-color: lightgray;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 .time {
@@ -75,8 +78,10 @@ video {
   max-width: 800px;
 }
 
-a {
+a.no-underline {
   text-decoration: none;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 li {
