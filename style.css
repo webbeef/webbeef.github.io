@@ -74,8 +74,9 @@ a {
   font-size: x-small;
 }
 
-video {
-  max-width: 800px;
+video, img.screenshot {
+  max-width: 100%;
+  text-align: center;
 }
 
 a.no-underline {

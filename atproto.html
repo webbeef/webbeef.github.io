@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Beaver: Teaching the Web new Tricks</title>
+    <meta charset="utf8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Beaver: Rewild Your Web" />
+    <meta name="theme-color" content="rgb(20, 20, 20)" />
+    <link rel="icon" href="./logo.png" />
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="./stats/index.js"></script>
+    <script>
+      ((window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        }),
+        (plausible.init =
+          plausible.init ||
+          function (i) {
+            plausible.o = i || {};
+          }));
+      plausible.init();
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a href="index.html" class="no-underline">
+      <h1>
+        <img src="logo.png" class="beaver-logo" alt="Beaver logo" />Teaching the
+        Web new Tricks
+      </h1>
+    </a>
+
+    <h2>ATProto Support</h2>
+
+    <p>
+      The
+      <a href="https://atproto.com/">Authenticated Transfer Protocol</a> ("AT
+      Protocol" or "atproto") is a network protocol for building open social web
+      applications.
+    </p>
+    <p>
+      Adding native support in Beaver is meant to ease the development of
+      ATProto applications without requiring a complex setup (OAuth anyone?) or
+      even a backend. Beaver acts as a broker that deals with authorization and
+      abstracts protocol details.
+    </p>
+
+    <h2>The at:// protocol handler</h2>
+    <p>
+      All the records stored in an atproto PDS (Personal Data Server) are
+      identified by a URI. This URI scheme (at://) is defined in
+      <a href="https://atproto.com/specs/at-uri-scheme">this document</a> and
+      has some
+      <a href="https://github.com/bluesky-social/atproto-website/issues/417I">
+        serious issues</a
+      >
+      but hopefully they will be resolved before long.
+    </p>
+    <p>
+      Our implementation allowws read access to all at:// URIs from any web
+      page. This is consistent with the public nature of data stored in ATProto.
+      If you are logged in, we extended the capabilities of the at:// protocol
+      to allow the usage POST and DELETE methods to create and delete records.
+    </p>
+    <p>We deviate from or add to the "spec" in a couple of places:</p>
+
+    <ul>
+      <li>
+        Because of the issue mentionned earlier, DIDs need to be percent encoded
+        when used in at:// URIs. This is quite inconvenient but an attempt to
+        special case the at:// scheme in Servo's URL parser did not pan out in a
+        satisfactory way.
+      </li>
+      <li>
+        To link to a blob, use the 'com.atproto.sync.blob' collection and the
+        blob rkey.
+      </li>
+    </ul>
+
+    <p>Here's what loading an at:// Uri looks likes</p>
+    <img
+      class="screenshot"
+      src="media/at_protocol_json.png"
+      alt="top level load of a at:// uri"
+    />
+
+    <h2>ATProto Login in Beaver</h2>
+    <p>
+      Instead of having each app go through the OAuth dance or ask for an app
+      password, we added a small DOM API accessible to privileged contexts (like
+      our system UI and the settings app). This API includes methods to log in,
+      log out and check the current state of your ATProto session.
+    </p>
+    <p>
+      When you are logged in, Beaver at:// protocol handler will set the proper
+      bearer token to the xrpc endpoints of your PDS by itself, and manage
+      refreshing the token when required.
+    </p>
+    <img
+      class="screenshot"
+      src="media/at_protocol_settings_login.png"
+      alt="login to atproto in beaver settings"
+    />
+    <p>
+      We have a simple "ATProto explorer" app that leverage this to explore your
+      PDS data, and offers a simplistic interface to create records.
+    </p>
+    <img
+      class="screenshot"
+      src="media/at_protocol_create_record.png"
+      alt="atproto explorer offering to create a new bsy post"
+    />
+    <p>
+      ATProto records can be typed and validated against a schema (called a
+      "lexicon" in the ATProto world). It would be really interesting to create
+      a library of custom elements that can display a record based on its type.
+    </p>
+
+    <h2>Authorizing third parties</h2>
+    <p>
+      The AT Explorer app is a privileged app in Beaver, but it's obvious that
+      we need a way to let the user decide which web pages can have write access
+      to their data. To enable that we added support for authorized origins:
+      when you are logged in ATProto, the context menu has an additional item
+      that let you authorize a page:
+    </p>
+    <img
+      class="screenshot"
+      src="media/at_protocol_authorize_page.png"
+      alt="context menu with the new atproto authorization item"
+    />
+    <p>You can manage your authorized origins in the ATProto settings:</p>
+    <img
+      class="screenshot"
+      src="media/at_protocol_settings_domains.png"
+      alt="atproto settings showing the list of authorized origins"
+    />
+    <p>
+      Notably, we did not add an API to let pages request ATProto access. This
+      would likely be source of annoyance.
+    </p>
+    <p>
+      The current implementation is "all or nothing" in terms of what an
+      authorized app can access. An obvious improvement will be to define scopes
+      that are then enforced in the at:// protocol handler. There's a balance to
+      find there to protect the user and its data, but also have a pleasant user
+      experience.
+    </p>
+    <p>
+      Beaver could also create reports of an page activity (which collections
+      are used, for what purpose) for users that are curious about an app
+      behavior and to improve trust.
+    </p>
+
+    <h2>What about ActivityPub?</h2>
+    <p>
+      ATProto is not the only existing protocol to create an open social web.
+      The other major one is ActivityPub, underpinning the
+      <a href="https://mastodon.social/@webbeef">Mastodon</a> federated social
+      network.
+    </p>
+    <p>
+      Where ATProto has Personal Data Servers, ActivityPub is organized around
+      what we could call Communal Data Servers instead. That's a different - not
+      better or worse - model.
+    </p>
+    <p>
+      We'd love to had first class support for ActivityPub in Beaver, but it's
+      unclear to us if the
+      <a
+        href="https://codeberg.org/fediverse/fep/src/branch/main/fep/07d7/fep-07d7.md"
+        >FEP-07d7</a
+      >
+      proposal is what we need. Any help figuring this out will be greatly
+      appreciated!
+    </p>
+
+    <p class="time">Updated Mar 26 2026</p>
+  </body>
+</html>
