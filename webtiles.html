@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Beaver: Teaching the Web new Tricks</title>
+    <meta charset="utf8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Beaver: Rewild Your Web" />
+    <meta name="theme-color" content="rgb(20, 20, 20)" />
+    <link rel="icon" href="./logo.png" />
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="./stats/index.js"></script>
+    <script>
+      ((window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        }),
+        (plausible.init =
+          plausible.init ||
+          function (i) {
+            plausible.o = i || {};
+          }));
+      plausible.init();
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a href="index.html" class="no-underline">
+      <h1>
+        <img src="logo.png" class="beaver-logo" alt="Beaver logo" />Teaching the
+        Web new Tricks
+      </h1>
+    </a>
+
+    <h2>Web Tiles</h2>
+
+    <p>
+      After adding ATProto support, I started to look at nice applications of
+      the protocol. I was especially interested in the capability to store
+      arbitrary data in your data store, with a mix of structured data by
+      default (json records) and opaque blobs. That looks very close to what we
+      need to host web sites, and certainly I was not the only one to think
+      about that!
+    </p>
+    <p>
+      I serendipitously ended up on Robin Berjon's
+      <a href="https://webtil.es">Web Tiles</a> project. From the horse's mouth:
+    </p>
+
+    <blockquote>
+      Tiles are composable web docs and apps that can safely be used in
+      arbitrary contexts and assembled from multiple sources to carry out
+      complex user interface tasks. Their composability, security, and privacy
+      properties make them ideal for use in social media, chat, agents, and
+      malleable software.
+    </blockquote>
+
+    <p>
+      Technically, a Web Tile manifest is an ATProto record that bundles generic
+      meta-data about the tile (name, description, banner) and the list of
+      resources used by the tile.
+    </p>
+    <p>
+      Because of limitations on how PDS treat blobs, tile resources are stored
+      as opaque application/octet-stream content, and the real content type is
+      specified in the tile manifest.
+    </p>
+
+    <h2>The tile:// protocol handler</h2>
+    <p>
+      Because of the previously mentioned content-type issue with blobs, we
+      can't directly load a tile with an at:// url. Instead, we implemented a
+      tile:// protocol handler with the following characteristics:
+    </p>
+
+    <ul>
+      <li>
+        The tile url is built from the at:// url of the tile manifest:
+        at://robin.berjon.com/ing.dasl.masl/3meis42djm22d is turned into
+        tile://3meis42djm22d.robin.berjon.com/
+      </li>
+      <li>
+        We apply a <a href="https://dasl.ing/tiles.html">restrictive CSP</a> to
+        prevent data leaks.
+      </li>
+    </ul>
+
+    <h2>Tiles in action</h2>
+    <p>
+      Since manifests are JSON, they are pretty-printed in Beaver. This is good,
+      but we can do better!
+    </p>
+    <p>
+      We added support to detect some ATProto records formats, and implemented
+      custom elements that are capable of displaying them nicely. For now we
+      have components
+      <a
+        href="https://tangled.org/me.webbeef.org/beaver/tree/main/ui/atproto/viewers"
+        >for tile manifests and user profiles</a
+      >.
+    </p>
+    <p>
+      Here's a screencast showing how we navigate easily from the at:// url of a
+      manifest to a tile itself:
+    </p>
+    <video
+      src="media/atproto_tiles.mp4"
+      controls
+      alt="navigating from at:// manifest to a tile"
+    ></video>
+
+    <h2>Where do we go from here?</h2>
+    <p>
+      This stuff is very promising. We can mix UI elements to interact with the
+      various data types found in ATProto lexicons, all on client side. We can
+      store web sites and share location independent urls.
+    </p>
+    <p>Browsers can be read/write again!</p>
+    <p>
+      We need to build something as good looking as
+      <a href="https://www.aetheros.computer/">AetherOS</a> but without relying
+      on someone else backend.
+    </p>
+    <p>
+      The missing step is to find a solution for private, end to end encrypted
+      data. You should certainly not store your address book or navigation
+      history on your ATProto PDS!
+    </p>
+
+    <p class="time">Updated Mar 30 2026</p>
+  </body>
+</html>
