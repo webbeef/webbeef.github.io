@@ -12,12 +12,13 @@
     rgb(16% 16% 16%) 0%,
     rgb(5% 5% 5%) 100%
   );
+  --text-color: lightgray;
 }
 
 html {
   min-height: 100%;
   background: rgb(20, 20, 20);
-  color: lightgray;
+  color: var(--text-color);
   font-family: monospace;
   padding: 0;
   background: var(--bg-gradient);
@@ -64,17 +65,19 @@ p {
 }
 
 a {
-  color: black;
-  background-color: lightgray;
-  padding-left: 2px;
-  padding-right: 2px;
+  color: #222;
+  background-color: var(--text-color);
+  padding-left: 3px;
+  padding-right: 3px;
+  border-radius: 3px;
 }
 
 .time {
   font-size: x-small;
 }
 
-video, img.screenshot {
+video,
+img.screenshot {
   max-width: 100%;
   text-align: center;
 }
@@ -100,4 +103,13 @@ li {
 
 #servo-iroh-logos img {
   height: 2rem;
+}
+
+pre {
+  border: 1px solid var(--text-color);
+  border-left: 5px solid var(--text-color);
+  border-radius: 0 1em 1em 0;
+  padding: 1em;
+  background-color: gray;
+  color: #111;
 }

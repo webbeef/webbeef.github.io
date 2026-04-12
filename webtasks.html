@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Beaver: Teaching the Web new Tricks</title>
+    <meta charset="utf8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="Beaver: Rewild Your Web" />
+    <meta name="theme-color" content="rgb(20, 20, 20)" />
+    <link rel="icon" href="./logo.png" />
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="./stats/index.js"></script>
+    <script>
+      ((window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        }),
+        (plausible.init =
+          plausible.init ||
+          function (i) {
+            plausible.o = i || {};
+          }));
+      plausible.init();
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a href="index.html" class="no-underline">
+      <h1>
+        <img src="logo.png" class="beaver-logo" alt="Beaver logo" />Teaching the
+        Web new Tricks
+      </h1>
+    </a>
+
+    <h2>Web Tasks</h2>
+    <p>
+      When we introduced our support for
+      <a href="webtiles.html">Web Tiles</a> we explained that they are
+      automatically subject to a restrictive CSP in order to prevent data leaks
+      to 3rd parties. That make Web Tiles safe to use what are considered
+      "dangerous" APIs, eg. those accessing hardware APIs or other privacy
+      sensitive data sets on your devices like your address book.
+    </p>
+    <p>
+      That makes Web Tiles an ideal build block for composable, self contained
+      components that can fulfill tasks for a regular page even if they require
+      evelated privileges.
+    </p>
+    <p>
+      What we are aiming at is in fact a generalization of what is already done
+      by some Web features: when you use an
+      <code>&lt;input type="file"&gt</code> element, the page won't have access
+      to the full filesystem: this is delegated to the browser to allow the user
+      to pick the data to return.
+    </p>
+
+    <h2>On the Shoulders...</h2>
+    <p>
+      The principles of Web Tasks are not really a new thing. Several projects
+      have explored the space already, including:
+    </p>
+    <ul>
+      <li>
+        Mozilla's
+        <a
+          href="https://www.devdoc.net/web/developer.mozilla.org/en-US/docs/Mozilla/Firefox_OS/API/MozActivity.html"
+          >MozActivities</a
+        >
+        used in Firefox OS.
+      </li>
+      <li>
+        Google's <a href="https://www.w3.org/TR/web-intents/">Web Intents</a>.
+      </li>
+    </ul>
+    They all share similar requirements:
+    <ul>
+      <li>
+        A way for pages to declare and register what kind of features they can
+        provide.
+      </li>
+      <li>
+        A way for callers to trigger a task matching specific constraints.
+      </li>
+      <li>
+        A mechanism to pipe the from the caller to the provider, with the user
+        agent doing its job as an intermediary.
+      </li>
+    </ul>
+    <p>
+      The details are not that important. In our task implementation, we mostly
+      used the MozActivity model with a few tweaks, as it seems to be flexible
+      enough.
+    </p>
+
+    <h2>Web Task registration</h2>
+    <p>We support two ways to register tasks:</p>
+    <ul>
+      <li>
+        Using a <code>&ltlink rel="webtasks" href="tasks.json" &gt;</code> link
+        element with the "webtasks" relationship. Our implementation currently
+        registers tasks as you navigate pages. We may change that and gate the
+        registration on an explicit user action in the future.
+      </li>
+      <li>
+        With a privileged API on our embedder API:
+        <code>navigator.embedder.registerTaskProvider()</code>. This is mostly
+        useful for internal registration that we want to run without navigating
+        to a page.
+      </li>
+    </ul>
+
+    <h2>Calling and responding to tasks requests</h2>
+    <p>
+      Triggering a task is simple. We'll show a demo of an image editor and all
+      it takes for the caller is:
+    </p>
+    <pre>
+const result = await navigator.requestTask("edit-image", {
+  image: currentBlob,
+  type: "image/png",
+});</pre
+    >
+    <p>This will match the task registered by the image editor:</p>
+    <pre>
+{
+  "name": "edit-image",
+  "title": "Image Editor",
+  "description": "Annotate and edit images",
+  "href": "beaver://imageeditor/index.html",
+  "filters": {
+    "type": ["image/png", "image/jpeg", "image/webp"]
+  },
+  "display": "window",
+  "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0i...+PC9zdmc+"
+}</pre
+    >
+    <p>
+      Once the user has chosen a task provider, the page is opened and the
+      provider can access the data and send a response with:
+    </p>
+    <pre>
+const task = await window.acceptTask();
+console.log(`Will process task ${task.name}`);
+const blob = task.data.image;
+...
+task.port.postMessage(editedBlob);</pre
+    >
+    <p>
+      The provider receives an object with the task name and data as set in
+      <code>requestTask</code>, and a message port. The result can be sent back
+      by a regular call to <code>postMessage</code> on the message port.
+    </p>
+    <p>
+      The system itself takes care of rejecting the
+      <code>acceptTask()</code> promise in various situations like the provider
+      being closed before sending a response, or if the user doesn't pick a
+      provider at all.
+    </p>
+
+    <h2>Cross-devices Web Tasks</h2>
+    <p>
+      Building on the existing support for communication among paired devices,
+      we can enable cross device tasks. This is achieved by sending to other
+      peers local registrations and bridging message ports between the devices.
+      That makes it user friendly to leverage multiple devices and use the one
+      with the most appropriate capabilities.
+    </p>
+
+    <h2>Web Tasks in action</h2>
+    <p>
+      Here's a screencast showing how we can use our image editing provider. In
+      this case, we pick a provider on the laptop since it's a better experience
+      than editing on the smaller phone screen!
+    </p>
+    <video
+      src="media/webtasks.mp4"
+      controls
+      alt="cross device web task demonstration"
+    ></video>
+
+    <p class="time">Updated Aor 11 2026</p>
+  </body>
+</html>
